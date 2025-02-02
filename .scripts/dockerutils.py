@@ -59,19 +59,131 @@ def buildx_multi_arch_setup():
         raise RuntimeError("Docker buildx create failed")
 
 
-def buildx_build(docker_compose, archs, push=False, no_cache=False):
+def buildx_build_native(
+        docker_image,
+        docker_compose,
+        push=False,
+        no_cache=False
+    ):
+    archs = f"linux/{os.uname().machine}"
+
+    # check if the repository already exists
+    _ret = subprocess.run(
+        [
+            "docker",
+            "manifest",
+            "inspect",
+            f"{docker_image}"
+        ],
+        check=False,
+        capture_output=True,
+        env=os.environ
+    )
+
+    if "manifest unknown" in _ret.stderr.decode():
+        print("Repository not found, creating ...")
+
+        buildx_build(
+            docker_compose=docker_compose,
+            archs=archs,
+            push=False,
+            no_cache=no_cache
+        )
+    else:
+        print(f"Repository found, appending for {archs}")
+
+        buildx_build(
+            docker_compose=docker_compose,
+            archs=archs,
+            native=True,
+            push=False,
+            no_cache=no_cache
+        )
+
+        # re-tag
+        _cmd_list = [
+            "docker",
+            "tag",
+            f"{docker_image}",
+            f"{docker_image}-{os.uname().machine}"
+        ]
+
+        print(f"Running command: {' '.join(_cmd_list)}")
+
+        _ret = subprocess.run(
+            _cmd_list,
+            check=False,
+            env=os.environ
+        )
+
+        if _ret.returncode != 0:
+            raise RuntimeError("Docker tag for append failed")
+
+        if push:
+            _cmd_push_list = [
+                "docker",
+                "push",
+                f"{docker_image}-{os.uname().machine}"
+            ]
+
+            print(f"Running command: {' '.join(_cmd_push_list)}")
+
+            _ret = subprocess.run(
+                _cmd_push_list,
+                check=True,
+                env=os.environ
+            )
+
+            if _ret.returncode != 0:
+                raise RuntimeError("Docker push for append failed")
+
+            _cmd_append_list = [
+                "docker",
+                "buildx",
+                "imagetools",
+                "create",
+                "--append",
+                "-t", f"{docker_image}", f"{docker_image}-{os.uname().machine}"
+            ]
+
+            print(f"Running command: {' '.join(_cmd_append_list)}")
+
+            _ret = subprocess.run(
+                _cmd_append_list,
+                check=True,
+                env=os.environ
+            )
+
+            if _ret.returncode != 0:
+                raise RuntimeError("Docker buildx create append failed")
+
+
+def buildx_build(
+        docker_compose,
+        archs,
+        native=False,
+        push=False,
+        no_cache=False
+    ):
+    if native:
+        archs = f"linux/{os.uname().machine}"
+        print(f"Building for native architecture {archs}")
+
     _cmd_list = [
         "docker",
         "buildx",
         "bake",
         "-f", f"{docker_compose}",
         "--set", f"*.platform={archs}",
+        "--load",
         "--push" if push else None,
         "--no-cache" if no_cache else None
     ]
 
     # Remove all None entries from the command list
     _cmd_list = list(filter(None, _cmd_list))
+
+    print(f"Running command: {' '.join(_cmd_list)}")
 
     _ret = subprocess.run(
         _cmd_list,

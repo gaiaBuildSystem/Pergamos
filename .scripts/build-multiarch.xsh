@@ -85,15 +85,10 @@ if container_file_folder_path.exists():
         print(f"\tImage Base: {os.environ['BASE_REGISTRY']}{os.environ['BASE_IMAGE']}{os.environ['GPU']}:{os.environ['BASE_VERSION']}")
         print(f"\tGPU: {args['GPU']}")
 
-        if native:
-            # Get native arch
-            archs = f"linux/{os.uname().machine}"
-            print(f"\tArch: {os.uname().machine}")
-        else:
-            # Get all archs
-            archs = ",".join([f"linux/{arch}" for arch in args['arch']])
-            for arch in args['arch']:
-                print(f"\tArch: {arch}")
+        # Get all archs
+        archs = ",".join([f"linux/{arch}" for arch in args['arch']])
+        for arch in args['arch']:
+            print(f"\tArch: {arch}")
 
         # Set environment variables
         print("\n\t", end="")
@@ -108,13 +103,21 @@ if container_file_folder_path.exists():
         # aesthetically separate
         print("")
 
-        # Build command
-        dockerutils.buildx_build(
-            docker_compose=f"{container_file_folder}/docker-compose.yml",
-            archs=archs,
-            no_cache=no_cache,
-            push=push_to_dockerhub
-        )
+        if not native:
+            # Build command
+            dockerutils.buildx_build(
+                docker_compose=f"{container_file_folder}/docker-compose.yml",
+                archs=archs,
+                no_cache=no_cache,
+                push=push_to_dockerhub
+            )
+        else:
+            dockerutils.buildx_build_native(
+                docker_image=f"{os.environ['REGISTRY']}{os.environ['IMAGE_NAME']}{os.environ['GPU']}:{os.environ['IMAGE_VERSION']}",
+                docker_compose=f"{container_file_folder}/docker-compose.yml",
+                no_cache=no_cache,
+                push=push_to_dockerhub
+            )
 
 else:
     write_error(f"{container_file_folder} does not exist")
