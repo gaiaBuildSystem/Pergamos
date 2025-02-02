@@ -16,7 +16,8 @@ PergamOS is the namespace for the Debian based container images library of the G
 
 This repository was designed to be used as a dev container. To use it you will need to have Docker, Docker Compose plugin and Docker buildx plugin installed on your machine.
 
-> ⚠ **Warning**: The dev container should have the save Docker group id as the host machine. This is necessary to avoid permission issues when running commands. Before opening the repository in a dev container, make sure to edit the `.devcontainer/devcontainer.json` file and change the `"GID"` argument of the context to match the Docker group id of your host machine. To get the hos machine Docker group id you can run the command `getent group docker`.
+> [!IMPORTANT]
+The dev container should have the same Docker group id as the host machine. This is necessary to avoid permission issues when running commands. Before opening the repository in a dev container, make sure to edit the `.devcontainer/devcontainer.json` file and change the `"GID"` argument of the context to match the Docker group id of your host machine. To get the hos machine Docker group id you can run the command `getent group docker`.
 
 With the Docker dependencies installed you can open the repository in Visual Studio Code and re-open the workspace in a dev container.
 
