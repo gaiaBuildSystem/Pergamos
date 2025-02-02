@@ -1,4 +1,4 @@
-# PERGAMOS
+# PergamOS
 
 <p align="center">
     <img
