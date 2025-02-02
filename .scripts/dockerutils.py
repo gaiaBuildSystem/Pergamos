@@ -1,6 +1,7 @@
 # pylint: disable=missing-function-docstring
 # pylint: disable=missing-module-docstring
 import os
+import json
 import base64
 import subprocess
 
@@ -11,7 +12,7 @@ def binfmt():
             "run",
             "--rm",
             "--privileged",
-            "torizon/binfmt:latest"
+            "pergamos/binfmt:9.0.2"
         ],
         check=True,
         env=os.environ
@@ -100,13 +101,22 @@ def __get_sec(name):
 
 
 def docker_registry_login():
-    registry_username = os.getenv("REGISTRY_USERNAME", "matheuscastello")
+    registry_username = os.getenv("REGISTRY_USERNAME", "gaiaproject")
     registry_password = __get_sec("DOCKERHUB_TOKEN")
 
     # token to base64
     registry_password_b64 = base64.b64encode(
-        registry_password.encode("utf-8")
+        (f"{registry_username}:{registry_password}").encode("utf-8")
     ).decode("utf-8")
+
+    # create the ~/.docker/config.json file
+    config = {
+        "auths": {
+            "https://index.docker.io/v1/": {
+                "auth": registry_password_b64
+            }
+        }
+    }
 
     # create the ~/.docker/config.json file
     with open(
@@ -114,19 +124,13 @@ def docker_registry_login():
         encoding="utf-8",
         mode="w"
     ) as file:
-        file.write(
-            f'{{"auths": {{"https://index.docker.io/v1/": {{"auth": "{registry_password_b64}"}}}}}}'
-        )
+        json.dump(config, file)
 
     _ret = subprocess.run(
         [
             "docker",
-            "login",
-            "-u",
-            registry_username,
-            "--password-stdin"
+            "login"
         ],
-        input=registry_password,
         text=True,
         check=True,
         env=os.environ
