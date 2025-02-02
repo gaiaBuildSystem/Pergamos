@@ -1,0 +1,50 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "run-file",
+            "command": "python3",
+            "isBackground": true,
+            "type": "shell",
+            "args": [
+                "-m", "xonsh", "-c", "${file} ${input:args}"
+            ],
+            "options": {
+                "env": {
+                    "PYDEVD_DISABLE_FILE_VALIDATION": "1"
+                }
+            },
+            "problemMatcher": [
+                {
+                    "owner": "python",
+                    "fileLocation": ["relative", "${workspaceFolder}"],
+                    "pattern": [
+                        {
+                            "regexp": ".",
+                            "file": 1,
+                            "location": 2,
+                            "message": 3
+                        }
+                    ],
+                    "background": {
+                        "activeOnStart": false,
+                        "beginsPattern": ".*__debugpy__.*",
+                        "endsPattern": ".*__debugpy__ go.*",
+                    }
+                }
+            ],
+            "presentation": {
+                "reveal": "always"
+            },
+            "group": "none"
+        }
+    ],
+    "inputs": [
+        {
+            "id": "args",
+            "type": "promptString",
+            "description": "Input arguments for the script",
+            "default": ""
+        }
+    ]
+}

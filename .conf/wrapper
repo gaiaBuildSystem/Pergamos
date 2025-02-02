@@ -1,0 +1,11 @@
+#!/bin/bash
+
+touch /home/pergamos/.xonshrc
+chmod 777 /home/pergamos/.xonshrc
+
+chown -R pergamos:pergamos /home/pergamos/.xonshrc
+chown -R pergamos:pergamos /project
+
+# execute the arguments as the user pergamos
+# in the virtual environment
+sudo -u pergamos -i /bin/bash --login -c "source /opt/venv/bin/activate && $@"

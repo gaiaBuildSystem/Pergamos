@@ -1,0 +1,79 @@
+
+ARG GID=1000
+
+FROM debian:bookworm
+
+ARG GID
+
+# install essential
+RUN apt-get -q -y update && \
+    apt-get -q -y install --no-install-recommends \
+    ca-certificates \
+    curl \
+    gnupg \
+    lsb-release \
+    && apt-get clean && apt-get autoremove && \
+    rm -rf /var/lib/apt/lists/*
+
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+
+# for install docker
+RUN mkdir -p /etc/apt/keyrings && \
+    curl -fsSL https://download.docker.com/linux/debian/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg && \
+    curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | gpg --dearmor -o /etc/apt/keyrings/githubcli-archive-keyring.gpg
+
+RUN echo \
+    "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/debian \
+    $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null && \
+    echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/githubcli-archive-keyring.gpg] \
+    https://cli.github.com/packages stable main" | tee /etc/apt/sources.list.d/github-cli.list > /dev/null
+
+# install required packages
+RUN apt-get -q -y update && \
+    apt-get -q -y install --no-install-recommends \
+    wget \
+    git \
+    pass \
+    sudo \
+    python3 \
+    python3-pip \
+    python3-venv \
+    docker-ce \
+    docker-ce-cli \
+    containerd.io \
+    docker-compose-plugin \
+    docker-buildx-plugin \
+    && apt-get clean && apt-get autoremove && \
+    rm -rf /var/lib/apt/lists/*
+
+# install hadolint
+RUN curl -L -o hadolint https://github.com/hadolint/hadolint/releases/latest/download/hadolint-Linux-x86_64 && \
+    chmod +x hadolint && \
+    mv hadolint /usr/local/bin/
+
+# /project can be mounted as a volume to the PWD of the project on host
+COPY . /project
+
+# create a virtual environment & install dependencies
+# hadolint ignore=SC1091
+RUN cp /project/.conf/wrapper /usr/bin/wrapper && \
+    chmod +x /usr/bin/wrapper && \
+    touch /root/.xonshrc && \
+    python3 -m venv /opt/venv && \
+    . /opt/venv/bin/activate && \
+    pip install --no-cache-dir -r /project/.conf/requirements.txt
+
+# create a user
+RUN useradd -m -s /bin/bash pergamos && \
+    groupmod -g ${GID} docker && \
+    usermod -aG docker pergamos && \
+    echo "pergamos ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/pergamos && \
+    echo "Defaults !authenticate" > /etc/sudoers.d/99-nopasswd
+
+
+# set the working directory
+WORKDIR /project
+
+
+# initialize already the virtual environment
+ENTRYPOINT [ "wrapper" ]

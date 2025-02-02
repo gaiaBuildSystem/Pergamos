@@ -1,0 +1,15 @@
+{
+    "window.title": "Gaia Containerfiles",
+    "workbench.sideBar.location": "right",
+    "hadolint.hadolintPath": "/usr/local/bin/hadolint",
+    "hadolint.cliOptions": [
+        "--no-color",
+        "-c", "./.conf/hadolint.yml"
+    ],
+    "pylsp.executable": "/opt/venv/bin/pylsp",
+    "python.defaultInterpreterPath": "/opt/venv/bin/python",
+    "mypy-type-checker.ignorePatterns": [
+        "*.xsh",
+        "**/*.xsh"
+    ],
+}

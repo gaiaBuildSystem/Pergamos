@@ -1,0 +1,13 @@
+colorama
+pygments
+prompt-toolkit
+setproctitle
+xonsh
+pylsp-rope
+python-lsp-server
+debugpy
+distro
+shtab
+pyyaml
+psutil
+GitPython

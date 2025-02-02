@@ -1,0 +1,18 @@
+services:
+
+  builder:
+    build:
+      context: ../
+      dockerfile: .conf/Containerfile
+    image: torazone/container-builder
+
+
+  builder-dev:
+    build:
+      context: ../
+      dockerfile: .conf/Containerfile
+    image: torazone/container-builder
+    tty: true
+    stdin_open: true
+    volumes:
+      - ../:/app

@@ -1,0 +1,19 @@
+{
+    "image": "binfmt",
+    "registry": "pergamos",
+    "version": "9.0.2",
+    "multiarch": "true",
+    "machines": [
+        {
+            "name": "generic",
+            "arch": [
+                "arm64",
+                "amd64"
+            ],
+            "BASE_REGISTRY": "",
+            "BASE_IMAGE": "",
+            "BASE_VERSION": "",
+            "GPU": ""
+        }
+    ]
+}
