@@ -80,13 +80,13 @@ def buildx_build_native(
         env=os.environ
     )
 
-    if "manifest unknown" in _ret.stderr.decode():
+    if "no such manifest" in _ret.stderr.decode():
         print("Repository not found, creating ...")
 
         buildx_build(
             docker_compose=docker_compose,
             archs=archs,
-            push=False,
+            push=push,
             no_cache=no_cache
         )
     else:
