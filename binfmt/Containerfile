@@ -7,6 +7,7 @@ RUN apt-get update && apt-get install -y qemu-user-static && \
     mv /usr/bin/qemu-ppc64le-static /usr/bin/qemu-ppc64le && \
     mv /usr/bin/qemu-s390x-static /usr/bin/qemu-s390x && \
     mv /usr/bin/qemu-riscv64-static /usr/bin/qemu-riscv64 && \
+    mv /usr/bin/qemu-x86_64-static /usr/bin/qemu-x86_64 && \
     apt-get remove -y qemu-user-static
 
 # workaround for 32bit arm on 64bit, we need only the qemu-arm
@@ -29,6 +30,13 @@ RUN go build \
     -ldflags "-extldflags '-static'" \
     /go/src/binfmt/main.go
 
+COPY etc/binfmt.d/00_linuxkit.conf etc/binfmt.d/00_linuxkit.conf
+
+# remove the line that match the architecture from the platform
+RUN ARCH=$(uname -m) && \
+    sed -i "/^:qemu-${ARCH}:/d" /etc/binfmt.d/00_linuxkit.conf && \
+    cat /etc/binfmt.d/00_linuxkit.conf
+
 FROM scratch
 
 ENTRYPOINT []
@@ -37,7 +45,7 @@ WORKDIR /
 
 COPY --from=qemu usr/bin/qemu-* usr/bin/
 COPY --from=mirror /binfmt usr/bin/binfmt
-COPY etc/binfmt.d/00_linuxkit.conf etc/binfmt.d/00_linuxkit.conf
+COPY --from=mirror /etc/binfmt.d/00_linuxkit.conf /etc/binfmt.d/00_linuxkit.conf
 
 
 CMD [ \
