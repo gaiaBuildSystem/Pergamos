@@ -95,3 +95,7 @@ Then at end you can run:
 ```
 
 This will build the image `pergamos/banana:0.0.0` and push it to the registry.
+
+> [!IMPORTANT]
+To login in the Dockerhub registry you need to set the environment variable
+`REGISTRY_USERNAME`, set it on the `.devcontainer/devcontainer.json` `removeEnv` property. Also create a file at `.sec/DOCKERHUB_TOKEN` with your Dockerhub token or password. This way the build script will know how to login.
