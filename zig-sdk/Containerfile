@@ -16,6 +16,7 @@ RUN apt-get update \
     && apt-get upgrade -y --no-install-recommends \
     && apt-get install -y --no-install-recommends \
         wget \
+        xz-utils \
     && apt-get autopurge -y \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
@@ -26,19 +27,17 @@ RUN rm /etc/apt/apt.conf.d/docker-clean && \
 
 
 # install zig
-RUN if [ "$IMAGE_ARCH" = "arm64" ] ; then \
-        export ZIG_ARCH=aarch64; \
-    elif [ "$IMAGE_ARCH" = "armhf" ] ; then \
-        export ZIG_ARCH=armv7a; \
-    elif [ "$IMAGE_ARCH" = "amd64" ] ; then \
-        export ZIG_ARCH=x86_64; \
-    elif [ "$IMAGE_ARCH" = "riscv64" ] ; then \
-        export ZIG_ARCH=riscv64; \
+RUN IMAGE_ARCH=$(arch) && \
+    echo "Building for $IMAGE_ARCH" && \
+    if [ "$IMAGE_ARCH" = "aarch64" ] ; then \
+        ZIG_ARCH=aarch64; \
+    elif [ "$IMAGE_ARCH" = "x86_64" ] ; then \
+        ZIG_ARCH=x86_64; \
     else \
         echo "Unsupported architecture"; \
         exit 1; \
     fi && \
-    wget --progress=dot:giga https://ziglang.org/download/0.13.0/zig-linux-${ZIG_ARCH}-0.13.0.tar.xz \
+    wget --progress=dot:giga --no-check-certificate https://ziglang.org/download/0.13.0/zig-linux-${ZIG_ARCH}-0.13.0.tar.xz \
     && tar -xvf zig-linux-${ZIG_ARCH}-0.13.0.tar.xz \
     && mkdir -p /usr/local/zig \
     && mv zig-linux-${ZIG_ARCH}-0.13.0/* /usr/local/zig \
