@@ -2,6 +2,20 @@
     "version": "2.0.0",
     "tasks": [
         {
+            "label": "select-python-venv",
+            "hide": true,
+            "type": "shell",
+            "command": "echo",
+            "args": [
+                "Select Python venv ${command:python.createTerminal}"
+            ],
+            "problemMatcher": "$tsc",
+            "dependsOrder": "sequence",
+            "runOptions": {
+                "runOn": "folderOpen"
+            }
+        },
+        {
             "label": "run-file",
             "command": "python3",
             "isBackground": true,
