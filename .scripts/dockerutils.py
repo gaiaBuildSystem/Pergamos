@@ -175,7 +175,7 @@ def buildx_build(
         "bake",
         "-f", f"{docker_compose}",
         "--set", f"*.platform={archs}",
-        "--load",
+        "--load" if native else None,
         "--push" if push else None,
         "--no-cache" if no_cache else None
     ]
