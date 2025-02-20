@@ -25,5 +25,9 @@ services:
       - USID=${USID}
       # id -g
       - GUSID=${GUSID}
+    volumes:
+      - type: bind
+        source: ${PWD}
+        target: /source
     command: zig build
     image: ${IMAGE_REGISTRY}${IMAGE_NAME}${GPU}:${IMAGE_VERSION}
