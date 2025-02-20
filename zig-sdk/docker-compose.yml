@@ -18,3 +18,12 @@ services:
         IMAGE_ARCH: ${IMAGE_ARCH}
         GPU: ${GPU}
     image: ${IMAGE_REGISTRY}${IMAGE_NAME}${GPU}:${IMAGE_VERSION}
+
+  zig-sdk-run:
+    environment:
+      # id -u
+      - USID=${USID}
+      # id -g
+      - GUSID=${GUSID}
+    command: zig build
+    image: ${IMAGE_REGISTRY}${IMAGE_NAME}${GPU}:${IMAGE_VERSION}
