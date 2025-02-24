@@ -16,6 +16,8 @@ RUN apt-get update \
     && apt-get upgrade -y --no-install-recommends \
     && apt-get install -y --no-install-recommends \
         gcc \
+        gcc-aarch64-linux-gnu \
+        gcc-arm-linux-gnueabihf \
         u-boot-tools \
         libelf-dev \
         bc bison build-essential coccinelle \
