@@ -1,0 +1,56 @@
+# Copyright (c) 2025 Gaia Project
+# SPDX-License-Identifier: MIT
+
+ARG REGISTRY=
+ARG IMAGE_ARCH=
+ARG BASE_REGISTRY=
+ARG BASE_IMAGE=
+ARG BASE_VERSION=
+ARG BASE_VERSION2=
+ARG BASE_IMAGE2=
+ARG GPU=
+
+
+FROM ubuntu:latest as download-img
+
+RUN apt-get update -y && \
+    apt-get upgrade -y && \
+    apt-get install -y \
+    curl \
+    tar \
+    xz-utils
+
+
+RUN mkdir -p /phobos && \
+    cd /phobos && \
+    curl -L -o qemux86-64-ota-0-0-0.img.tar.xz \
+    https://br-se1.magaluobjects.com/gaia-imgs/qemux86-64-ota-0-0-0.img.tar.xz && \
+    tar -xf qemux86-64-ota-0-0-0.img.tar.xz && \
+    rm qemux86-64-ota-0-0-0.img.tar.xz && \
+    mv /phobos/qemux86-64-ota-0-0-0.img /phobos/phobos.img
+
+
+FROM ${BASE_IMAGE}:${BASE_VERSION} AS phobos
+
+
+RUN apt-get update -y && \
+    apt-get upgrade -y && \
+    apt-get install -y \
+        qemu-system \
+        qemu-utils \
+        qemu-system-common \
+        isc-dhcp-server \
+        screen \
+        && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+
+COPY ./entry.sh /usr/bin/entry
+COPY ./dhcpd.conf /etc/dhcp/dhcpd.conf
+
+RUN chmod +x /usr/bin/entry
+
+COPY --from=download-img /phobos/phobos.img .
+
+ENTRYPOINT [ "entry" ]
