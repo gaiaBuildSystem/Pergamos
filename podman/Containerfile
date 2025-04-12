@@ -1,0 +1,109 @@
+# Copyright (c) 2025 Gaia Project
+# SPDX-License-Identifier: MIT
+
+ARG REGISTRY=
+ARG IMAGE_ARCH=
+ARG BASE_REGISTRY=
+ARG BASE_IMAGE=
+ARG BASE_VERSION=
+ARG BASE_VERSION2=
+ARG BASE_IMAGE2=
+ARG GPU=
+
+
+FROM ${BASE_IMAGE}:${BASE_VERSION} AS build
+
+RUN apt-get update -y && \
+    apt-get upgrade -y && \
+    apt-get install -y \
+        btrfs-progs \
+        gcc \
+        git \
+        golang-go \
+        go-md2man \
+        iptables \
+        libassuan-dev \
+        libbtrfs-dev \
+        libc6-dev \
+        libdevmapper-dev \
+        libglib2.0-dev \
+        libgpgme-dev \
+        libgpg-error-dev \
+        libprotobuf-dev \
+        libprotobuf-c-dev \
+        libseccomp-dev \
+        libselinux1-dev \
+        libsystemd-dev \
+        make \
+        passt \
+        pkg-config \
+        runc \
+        uidmap \
+        libapparmor-dev \
+        containernetworking-plugins \
+        && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+# builds
+RUN git clone https://github.com/containers/conmon && \
+    cd conmon && \
+    export GOCACHE="$(mktemp -d)" && \
+    make && \
+    make podman
+
+RUN git clone https://github.com/opencontainers/runc.git $GOPATH/src/github.com/opencontainers/runc && \
+    cd $GOPATH/src/github.com/opencontainers/runc && \
+    make BUILDTAGS="selinux seccomp cni" && \
+    cp runc /usr/bin/runc
+
+RUN git clone https://github.com/containers/podman/ && \
+    cd podman && \
+    make BUILDTAGS="selinux seccomp cni" PREFIX=/usr && \
+    env PATH=$PATH make install PREFIX=/usr
+
+FROM ${BASE_IMAGE}:${BASE_VERSION} AS podman
+
+RUN apt-get update -y && \
+    apt-get upgrade -y && \
+    apt-get install -y \
+        btrfs-progs \
+        iptables \
+        libassuan9 \
+        libbtrfs0t64 \
+        libc6 \
+        libdevmapper1.02.1 \
+        libglib2.0-0 \
+        libgpgme11 \
+        libseccomp2 \
+        libselinux1 \
+        libsystemd0 \
+        uidmap \
+        containernetworking-plugins \
+        fuse-overlayfs \
+        curl \
+        && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+# install  -d -m 755 /usr/local/libexec/podman
+# install  -m 755 bin/conmon /usr/local/libexec/podman/conmon
+COPY --from=build /usr/local/libexec/podman/conmon /usr/local/libexec/podman/conmon
+COPY --from=build /usr/local/libexec/podman /usr/local/libexec/podman
+
+# cp runc /usr/bin/runc
+COPY --from=build /usr/bin/runc /usr/bin/runc
+
+# install podman
+COPY --from=build /usr/bin/podman /usr/bin/podman
+COPY --from=build /usr/libexec/podman /usr/libexec/podman
+COPY --from=build /usr/libexec/podman/rootlessport /usr/libexec/podman/rootlessport
+COPY --from=build /usr/libexec/podman/quadlet /usr/libexec/podman/quadlet
+COPY --from=build /usr/lib/tmpfiles.d/podman.conf /usr/lib/tmpfiles.d/podman.conf
+COPY --from=build /usr/bin/podman-remote /usr/bin/podman-remote
+COPY --from=build /usr/bin/podmansh /usr/bin/podmansh
+
+# Add configuration
+RUN mkdir -p /etc/containers && \
+    curl -L -o /etc/containers/registries.conf https://raw.githubusercontent.com/containers/image/main/registries.conf && \
+    curl -L -o /etc/containers/policy.json https://raw.githubusercontent.com/containers/image/main/default-policy.json
