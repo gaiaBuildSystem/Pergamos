@@ -106,4 +106,5 @@ COPY --from=build /usr/bin/podmansh /usr/bin/podmansh
 # Add configuration
 RUN mkdir -p /etc/containers && \
     curl -L -o /etc/containers/registries.conf https://raw.githubusercontent.com/containers/image/main/registries.conf && \
-    curl -L -o /etc/containers/policy.json https://raw.githubusercontent.com/containers/image/main/default-policy.json
+    curl -L -o /etc/containers/policy.json https://raw.githubusercontent.com/containers/image/main/default-policy.json && \
+    echo "unqualified-search-registries = ['docker.io']" >> /etc/containers/registries.conf
