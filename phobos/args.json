@@ -10,8 +10,8 @@
                 "amd64"
             ],
             "BASE_REGISTRY": "",
-            "BASE_IMAGE": "debian",
-            "BASE_VERSION": "bookworm",
+            "BASE_IMAGE": "ubuntu",
+            "BASE_VERSION": "24.04",
             "GPU": ""
         }
     ]

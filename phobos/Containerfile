@@ -11,7 +11,7 @@ ARG BASE_IMAGE2=
 ARG GPU=
 
 
-FROM ubuntu:latest as download-img
+FROM ubuntu:latest AS download-img
 
 RUN apt-get update -y && \
     apt-get upgrade -y && \
