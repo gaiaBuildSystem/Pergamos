@@ -1,0 +1,18 @@
+{
+    "image": "rac-ci",
+    "registry": "pergamos",
+    "version": "latest",
+    "multiarch": "true",
+    "machines": [
+        {
+            "name": "generic",
+            "arch": [
+                "amd64"
+            ],
+            "BASE_REGISTRY": "",
+            "BASE_IMAGE": "rust",
+            "BASE_VERSION": "1.79-slim-bullseye",
+            "GPU": ""
+        }
+    ]
+}
