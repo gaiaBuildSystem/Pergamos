@@ -10,8 +10,8 @@
                 "amd64"
             ],
             "BASE_REGISTRY": "",
-            "BASE_IMAGE": "ubuntu",
-            "BASE_VERSION": "24.04",
+            "BASE_IMAGE": "debian",
+            "BASE_VERSION": "trixie",
             "GPU": ""
         }
     ]
