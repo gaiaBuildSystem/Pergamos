@@ -15,7 +15,7 @@ def write (
 def write_log (
     message
 ):
-    write(Fore.WHITE, Back.WHITE, message)
+    write(Fore.BLACK, Back.WHITE, message)
 
 def write_info (
     message
