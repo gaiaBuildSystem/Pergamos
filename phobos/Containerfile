@@ -23,11 +23,20 @@ RUN apt-get update -y && \
 
 RUN mkdir -p /phobos && \
     cd /phobos && \
-    curl -L -o qemux86-64-ota-0-0-0.img.tar.xz \
-    https://br-se1.magaluobjects.com/gaia-imgs/qemux86-64-ota-0-0-0.img.tar.xz && \
-    tar -xf qemux86-64-ota-0-0-0.img.tar.xz && \
-    rm qemux86-64-ota-0-0-0.img.tar.xz && \
-    mv /phobos/qemux86-64-ota-0-0-0.img /phobos/phobos.img
+    IMAGE_ARCH=$(arch) && \
+    MACHINE="" && \
+    if [ "${IMAGE_ARCH}" = "x86_64" ]; then \
+        MACHINE="qemux86-64"; \
+    elif [ "${IMAGE_ARCH}" = "aarch64" ]; then \
+        MACHINE="qemuarm64"; \
+    else \
+        echo "Unsupported architecture: ${IMAGE_ARCH}"; \
+    fi && \
+    curl -L -o img.tar.xz \
+        https://br-se1.magaluobjects.com/gaia-imgs/${MACHINE}-ota-0-0-0.img.tar.xz && \
+    tar -xf img.tar.xz && \
+    rm img.tar.xz && \
+    mv /phobos/${MACHINE}-ota-0-0-0.img /phobos/phobos.img
 
 
 FROM ${BASE_IMAGE}:${BASE_VERSION} AS phobos
