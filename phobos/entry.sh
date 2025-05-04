@@ -26,6 +26,25 @@ elif ! [[ "$_instances" =~ ^[0-9]+$ ]]; then
     _instances=0
 fi
 
+# set by arch
+_ARCH=$(arch)
+_QEMU_CMD=qemu-system-x86_64
+_MACHINE=pc
+_CPU=host
+
+if [ "$_ARCH" == "x86_64" ]; then
+    _QEMU_CMD=qemu-system-x86_64
+    _MACHINE=pc
+    _CPU=host
+elif [ "$_ARCH" == "aarch64" ]; then
+    _QEMU_CMD=qemu-system-aarch64
+    _MACHINE="virt,highmem=off"
+    _CPU=host
+else
+    echo "Unsupported architecture: $_ARCH"
+    exit 1
+fi
+
 if [ $_instances -gt 1 ]; then
     for i in $(seq 1 $_instances); do
         _random_mac=$(printf 'DE:AD:BE:EF:%02X:%02X' $((RANDOM%256)) $((RANDOM%256)))
@@ -33,13 +52,13 @@ if [ $_instances -gt 1 ]; then
 
         qemu-img resize -f raw /phobos$i.img +${_hdSize}G
 
-        qemu-system-x86_64 \
+        $_QEMU_CMD \
             -name "PhobOS Emulator" \
-            $(if [ "$NO_KVM" != "1" ]; then echo "-cpu host"; else echo "-cpu qemu64"; fi) \
+            -cpu host \
             -smp 4 \
             --netdev bridge,id=hn0,br=docker0 \
             -device virtio-net-pci,netdev=hn0,id=nic1,mac=$_random_mac \
-            -machine pc \
+            -machine $_MACHINE \
             -vga none \
             -device virtio-gpu-pci \
             -device virtio-tablet-pci \
@@ -52,7 +71,7 @@ if [ $_instances -gt 1 ]; then
 
     done
 
-    while [ $(ps aux | grep qemu-system-x86_64 | wc -l) -gt 1 ]; do
+    while [ $(ps aux | grep $_QEMU_CMD | wc -l) -gt 1 ]; do
         sleep 15
     done
 
@@ -64,13 +83,13 @@ echo "Starting PhobOS Emulator, please wait ..."
 _random_mac=$(printf 'DE:AD:BE:EF:%02X:%02X' $((RANDOM%256)) $((RANDOM%256)))
 qemu-img resize -f raw /phobos.img +${_hdSize}G
 
-qemu-system-x86_64 \
+$_QEMU_CMD \
     -name "PhobOS Emulator" \
-    $(if [ "$NO_KVM" != "1" ]; then echo "-cpu host"; else echo "-cpu qemu64"; fi) \
+    -cpu host \
     -smp 4 \
     --netdev bridge,id=hn0,br=docker0 \
     -device virtio-net-pci,netdev=hn0,id=nic1,mac=$_random_mac \
-    -machine pc \
+    -machine $_MACHINE \
     -vga none \
     -device virtio-gpu-pci \
     -device virtio-tablet-pci \
