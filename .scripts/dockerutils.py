@@ -250,3 +250,38 @@ def docker_registry_login():
 
     if _ret.returncode != 0:
         raise PermissionError("Docker login failed")
+
+
+def docker_manifest_glue(images, to_image):
+    _cmd_manifest = \
+        "docker " \
+        "manifest " \
+        "create " \
+        f"{to_image} " \
+        f"{' '.join(images)} "
+
+    _cmd_push = \
+        "docker " \
+        "manifest " \
+        "push " \
+        f"{to_image} "
+
+    _ret = subprocess.run(
+        _cmd_manifest.split(),
+        text=True,
+        check=True,
+        env=os.environ
+    )
+
+    if _ret.returncode != 0:
+        raise RuntimeError("Docker manifest create failed")
+
+    _ret = subprocess.run(
+        _cmd_push.split(),
+        text=True,
+        check=True,
+        env=os.environ
+    )
+
+    if _ret.returncode != 0:
+        raise RuntimeError("Docker manifest push failed")
