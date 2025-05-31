@@ -1,0 +1,75 @@
+# Copyright (c) 2025 Gaia Project
+# SPDX-License-Identifier: MIT
+
+ARG REGISTRY=
+ARG IMAGE_ARCH=
+ARG BASE_REGISTRY=
+ARG BASE_IMAGE=debian
+ARG BASE_VERSION=bookworm
+ARG BASE_VERSION2=
+ARG BASE_IMAGE2=
+ARG GPU=
+
+
+FROM ${BASE_IMAGE}:${BASE_VERSION} AS base
+
+
+ARG DEBIAN_FRONTEND=noninteractive
+
+
+RUN apt-get update \
+    && apt-get upgrade -y \
+    && apt-get install -y --no-install-recommends \
+        sudo \
+        ca-certificates \
+        netbase \
+        gpg \
+        wget \
+        curl \
+    && apt-get clean \
+    && apt-get autoremove \
+    && rm -rf /var/lib/apt/lists/*
+
+ENV LC_ALL=C.UTF-8
+
+RUN bash -c "if [[ ${TORADEX_FEED_URL} =~ 'am6x' ]]; then printf 'Types: deb\n\
+URIs: http://deb.debian.org/debian\n\
+Suites: bookworm-backports\n\
+Components: main\n\
+Signed-By: /usr/share/keyrings/debian-archive-keyring.gpg' >/etc/apt/sources.list.d/bookworm-backports.sources; \
+fi"
+
+RUN echo 'APT::Get::Assume-Yes "true";\n\
+    APT::Install-Recommends "0";\n\
+    APT::Install-Suggests "0";\n\
+    quiet "true";' > /etc/apt/apt.conf.d/01_buildconfig \
+    && mkdir -p /usr/share/man/man1
+
+RUN if [ "$GPU" = "imx8" ]; then \
+        TORADEX_FEED_URL="https://feeds.toradex.com/stable/nvidia/"; \
+        TORADEX_SNAPSHOT=$(curl https://feeds.toradex.com/stable/imx8/snapshots/latest-snapshot); \
+    elif [ "$GPU" = "imx95" ]; then \
+        TORADEX_FEED_URL="https://feeds.toradex.com/stable/imx95/"; \
+        TORADEX_SNAPSHOT=$(curl https://feeds.toradex.com/stable/imx95/snapshots/latest-snapshot); \
+    elif [ "$GPU" = "am6x" ]; then \
+        TORADEX_FEED_URL="https://feeds.toradex.com/stable/am6x/"; \
+        TORADEX_SNAPSHOT=$(curl https://feeds.toradex.com/stable/am6x/snapshots/latest-snapshot); \
+    else \
+        TORADEX_FEED_URL="https://feeds.toradex.com/stable/upstream/"; \
+        TORADEX_SNAPSHOT=$(curl https://feeds.toradex.com/stable/upstream/snapshots/latest-snapshot); \
+    fi && \
+    echo "Types: deb\n\
+URIs: ${TORADEX_FEED_URL}snapshots/${TORADEX_SNAPSHOT}\n\
+Suites: stable\n\
+Components: main non-free\n\
+Signed-By: /usr/share/keyrings/toradex-debian-repo.gpg" > /etc/apt/sources.list.d/toradex.sources \
+    && echo "Package: *\nPin: origin feeds.toradex.com\nPin-Priority: 900" > /etc/apt/preferences.d/toradex-feeds && \
+    wget -O- ${TORADEX_FEED_URL}/toradex-debian-repo-07102024.gpg \
+        | gpg --dearmor \
+        | tee /usr/share/keyrings/toradex-debian-repo.gpg
+
+RUN apt-get -y update && apt-get upgrade -y
+
+# create the phobos user
+RUN groupadd --gid 1000 phobos && \
+    useradd --gid 1000 --uid 1000 --shell /bin/bash --create-home phobos

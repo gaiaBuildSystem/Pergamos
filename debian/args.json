@@ -1,0 +1,19 @@
+{
+    "image": "debian",
+    "registry": "pergamos",
+    "version": "bookworm",
+    "multiarch": "true",
+    "machines": [
+        {
+            "name": "generic",
+            "arch": [
+                "amd64",
+                "arm64"
+            ],
+            "BASE_REGISTRY": "",
+            "BASE_IMAGE": "debian",
+            "BASE_VERSION": "bookworm",
+            "GPU": ""
+        }
+    ]
+}
