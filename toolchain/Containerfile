@@ -1,0 +1,42 @@
+# Copyright (c) 2025 Gaia Project
+# SPDX-License-Identifier: MIT
+
+ARG REGISTRY=
+ARG IMAGE_ARCH=
+ARG BASE_REGISTRY=pergamos
+ARG BASE_IMAGE=debian
+ARG BASE_VERSION=bookworm
+ARG BASE_VERSION2=
+ARG BASE_IMAGE2=
+ARG GPU=
+
+
+FROM ${BASE_REGISTRY}/${BASE_IMAGE}:${BASE_VERSION} AS builder
+
+
+RUN apt-get update \
+    && apt-get upgrade -y --no-install-recommends \
+    && apt-get install -y --no-install-recommends \
+        ca-certificates \
+        gpg \
+        wget \
+        curl \
+        crossbuild-essential-amd64 \
+        crossbuild-essential-arm64 \
+    && apt-get autopurge -y \
+    && apt-get clean
+
+
+# make the cross compiler more user friendly
+RUN dpkg --add-architecture arm64 && \
+    dpkg --add-architecture amd64 && \
+    ln -s /usr/bin/aarch64-linux-gnu-gcc /usr/bin/aarch64-gcc && \
+    ln -s /usr/bin/aarch64-linux-gnu-gcc /usr/bin/arm64-gcc && \
+    ln -s /usr/bin/aarch64-linux-gnu-gcc /usr/bin/armv8-gcc && \
+    ln -s /usr/bin/aarch64-linux-gnu-g++ /usr/bin/aarch64-g++ && \
+    ln -s /usr/bin/aarch64-linux-gnu-g++ /usr/bin/arm64-g++ && \
+    ln -s /usr/bin/aarch64-linux-gnu-g++ /usr/bin/armv8-g++ && \
+    ln -s /usr/bin/x86_64-linux-gnu-gcc /usr/bin/x86_64-gcc && \
+    ln -s /usr/bin/x86_64-linux-gnu-gcc /usr/bin/amd64-gcc && \
+    ln -s /usr/bin/x86_64-linux-gnu-g++ /usr/bin/amd64-g++ && \
+    ln -s /usr/bin/x86_64-linux-gnu-g++ /usr/bin/x86_64-g++
