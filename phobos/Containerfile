@@ -11,45 +11,22 @@ ARG BASE_IMAGE2=
 ARG GPU=
 
 
-FROM ubuntu:latest AS download-img
-
-RUN apt-get update -y && \
-    apt-get upgrade -y && \
-    apt-get install -y \
-    curl \
-    tar \
-    xz-utils
-
-
-RUN mkdir -p /phobos && \
-    cd /phobos && \
-    IMAGE_ARCH=$(arch) && \
-    MACHINE="" && \
-    if [ "${IMAGE_ARCH}" = "x86_64" ]; then \
-        MACHINE="qemux86-64"; \
-    elif [ "${IMAGE_ARCH}" = "aarch64" ]; then \
-        MACHINE="qemuarm64"; \
-    else \
-        echo "Unsupported architecture: ${IMAGE_ARCH}"; \
-    fi && \
-    curl -L -o img.tar.xz \
-        https://br-se1.magaluobjects.com/gaia-imgs/${MACHINE}-ota-0-0-0.img.tar.xz && \
-    tar -xf img.tar.xz && \
-    rm img.tar.xz && \
-    mv /phobos/${MACHINE}-ota-0-0-0.img /phobos/phobos.img
-
-
 FROM ${BASE_IMAGE}:${BASE_VERSION} AS phobos
 
 
 RUN apt-get update -y && \
     apt-get upgrade -y && \
     apt-get install -y \
+        curl \
+        tar \
+        xz-utils \
         qemu-system \
         qemu-utils \
         qemu-system-common \
         isc-dhcp-server \
         screen \
+        libtpms0 \
+        swtpm \
         && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
@@ -60,6 +37,5 @@ COPY ./dhcpd.conf /etc/dhcp/dhcpd.conf
 
 RUN chmod +x /usr/bin/entry
 
-COPY --from=download-img /phobos/phobos.img .
 
 ENTRYPOINT [ "entry" ]
