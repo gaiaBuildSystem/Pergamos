@@ -8,7 +8,8 @@
             "name": "generic",
             "arch": [
                 "amd64",
-                "arm64"
+                "arm64",
+                "arm"
             ],
             "BASE_REGISTRY": "",
             "BASE_IMAGE": "debian",
