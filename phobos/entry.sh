@@ -62,7 +62,11 @@ if [ "$1" == "image-download" ]; then
             curl -L -o u-boot.bin \
                 https://br-se1.magaluobjects.com/gaia-imgs/u-boot.bin
 
-            mv u-boot.bin /host/u-boot.bin
+            if [ ! -d /firmware ]; then
+                mkdir /firmware
+            fi
+
+            mv u-boot.bin /firmware/u-boot.bin
         fi
 
         # lock file for the version ok
@@ -80,6 +84,7 @@ cp /usr/share/OVMF/OVMF_VARS_4M.fd /tmp/OVMF_VARS.fd
 
 
 _hdSize=$STORAGE
+_hdSize=$(printf "%.0f" $_hdSize)
 _ramSize=$(printf "%.0f" $RAM)
 _instances=$INSTANCES
 _name=$USER_VM_NAME
@@ -163,13 +168,24 @@ fi
 echo "Starting PhobOS Emulator, please wait ..."
 
 _random_mac=$(printf 'DE:AD:BE:EF:%02X:%02X' $((RANDOM%256)) $((RANDOM%256)))
-qemu-img resize -f raw $_name +${_hdSize}G
+
+# check the file size
+_file_bytes=$(stat -c%s "$_name" 2>/dev/null || echo 0)
+_target_bytes=$(( _hdSize * 1073741824 ))
+
+if [ "$_file_bytes" -lt "$_target_bytes" ]; then
+    _current_gb=$(awk "BEGIN {printf \"%.2f\", $_file_bytes/1073741824}")
+    echo "Resizing disk image from ${_current_gb}G to ${_hdSize}G ..."
+    qemu-img resize -f raw $_name ${_hdSize}G
+fi
 
 $_QEMU_CMD \
     -name "PhobOS Emulator" \
     $(if [ "$NO_KVM" != "1" ]; then echo "-cpu host"; fi) \
     $(if [ "$NO_KVM" == "1" ]; then echo "-cpu max"; fi) \
     -smp 4 \
+    $(if [ "$_ARCH" == "x86_64" ]; then echo "-smbios type=1,manufacturer=MicroHobby,product=GaiaVM,version="0.0",serial=VMlionkiller,uuid=5270e529-9710-4fca-ba1a-1a9a07fca3aa"; fi) \
+    $(if [ "$_ARCH" == "x86_64" ]; then echo "-smbios type=2,manufacturer=MicroHobby,product=GaiaVM,version=0.0,serial=VMlionkiller"; fi) \
     --netdev bridge,id=hn0,br=docker0 \
     -device virtio-net-pci,netdev=hn0,id=nic1,mac=$_random_mac \
     -machine $_MACHINE \
@@ -181,7 +197,7 @@ $_QEMU_CMD \
     -drive file=$_name,format=raw,if=virtio \
     $(if [ "$_ARCH" == "x86_64" ]; then echo "-drive if=pflash,format=raw,readonly=on,file=/usr/share/OVMF/OVMF_CODE_4M.fd"; fi) \
     $(if [ "$_ARCH" == "x86_64" ]; then echo "-drive if=pflash,format=raw,file=/tmp/OVMF_VARS.fd"; fi) \
-    $(if [ "$_ARCH" == "aarch64" ]; then echo "-bios /host/u-boot.bin"; fi) \
+    $(if [ "$_ARCH" == "aarch64" ]; then echo "-bios /firmware/u-boot.bin"; fi) \
     -chardev socket,id=chrtpm,path=/tmp/pemsafe/swtpm-sock \
     -tpmdev emulator,id=tpm0,chardev=chrtpm \
     $(if [ "$_ARCH" == "x86_64" ]; then echo "-device tpm-tis,tpmdev=tpm0"; fi) \

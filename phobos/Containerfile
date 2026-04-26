@@ -15,8 +15,8 @@ FROM ${BASE_IMAGE}:${BASE_VERSION} AS phobos
 
 
 RUN apt-get update -y && \
-    apt-get upgrade -y && \
-    apt-get install -y \
+    apt-get upgrade -y --no-install-recommends && \
+    apt-get install -y --no-install-recommends \
         curl \
         tar \
         xz-utils \
@@ -27,6 +27,7 @@ RUN apt-get update -y && \
         screen \
         libtpms0 \
         swtpm \
+        ovmf \
         && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
