@@ -3,7 +3,7 @@
 <p align="center">
     <img
         alt="PergamOS Logo"
-        src="https://github.com/gaiaBuildSystem/.github/raw/main/profile/PergamOSLogo.png?v=2"
+        src="https://github.com/gaiaBuildSystem/.github/blob/main/profile/PergamOS2.png?raw=true"
         height="210"
     />
 </p>
