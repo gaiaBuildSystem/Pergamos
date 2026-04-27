@@ -16,13 +16,17 @@ FROM ${BASE_IMAGE}:${BASE_VERSION} AS phobos
 
 RUN apt-get update -y && \
     apt-get upgrade -y --no-install-recommends && \
-    apt-get install -y --no-install-recommends \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
         curl \
         tar \
         xz-utils \
+        dbus-x11 \
         qemu-system \
         qemu-utils \
         qemu-system-common \
+        qemu-system-x86 \
+        qemu-system-arm \
+        qemu-system-gui \
         isc-dhcp-server \
         screen \
         libtpms0 \

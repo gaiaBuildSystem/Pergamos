@@ -113,8 +113,22 @@ else
     echo "Using $_name as the image file"
 fi
 
-# set by arch
-_ARCH=$(arch)
+# check if the PHOBOS_OVERRIDE_ARCH variable is set
+if [ -n "$PHOBOS_OVERRIDE_ARCH" ]; then
+    _ARCH="$PHOBOS_OVERRIDE_ARCH"
+    echo "Overriding architecture to: $_ARCH"
+
+    # if we are overriding the architecture and we are on a foreign architecture
+    # we cannot use KVM, so we need to set the NO_KVM variable to 1
+    if [ "$_ARCH" != "$(arch)" ]; then
+        echo "Warning: Overriding architecture to $_ARCH while running on $(arch), running without KVM support."
+        export NO_KVM=1
+    fi
+else
+    _ARCH=$(arch)
+    echo "Detected architecture: $_ARCH"
+fi
+
 _QEMU_CMD=qemu-system-x86_64
 _MACHINE=pc
 _CPU=host
