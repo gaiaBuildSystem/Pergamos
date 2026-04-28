@@ -193,13 +193,20 @@ if [ "$_file_bytes" -lt "$_target_bytes" ]; then
     qemu-img resize -f raw $_name ${_hdSize}G
 fi
 
+_SMBIOS_ARGS=()
+if [ "$_ARCH" == "x86_64" ]; then
+    _SMBIOS_ARGS+=(
+        -smbios "type=1,manufacturer=MicroHobby,product=PhobOS Emulator,version=0.0,serial=VMlionkiller,uuid=5270e529-9710-4fca-ba1a-1a9a07fca3aa"
+        -smbios "type=2,manufacturer=MicroHobby,product=PhobOS Emulator,version=0.0,serial=VMlionkiller"
+    )
+fi
+
 $_QEMU_CMD \
     -name "PhobOS Emulator" \
     $(if [ "$NO_KVM" != "1" ]; then echo "-cpu host"; fi) \
     $(if [ "$NO_KVM" == "1" ]; then echo "-cpu max"; fi) \
     -smp 4 \
-    $(if [ "$_ARCH" == "x86_64" ]; then echo "-smbios type=1,manufacturer=MicroHobby,product=GaiaVM,version="0.0",serial=VMlionkiller,uuid=5270e529-9710-4fca-ba1a-1a9a07fca3aa"; fi) \
-    $(if [ "$_ARCH" == "x86_64" ]; then echo "-smbios type=2,manufacturer=MicroHobby,product=GaiaVM,version=0.0,serial=VMlionkiller"; fi) \
+    "${_SMBIOS_ARGS[@]}" \
     --netdev bridge,id=hn0,br=docker0 \
     -device virtio-net-pci,netdev=hn0,id=nic1,mac=$_random_mac \
     -machine $_MACHINE \
