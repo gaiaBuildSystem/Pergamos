@@ -162,6 +162,7 @@ if [ $_instances -gt 1 ]; then
             -machine $_MACHINE \
             -vga none \
             -device virtio-gpu-pci \
+            $(if [ "$_ARCH" == "aarch64" ]; then echo "-device virtio-keyboard-pci"; fi) \
             -device virtio-tablet-pci \
             -display gtk,zoom-to-fit=off \
             -m $_ramSize \
@@ -212,6 +213,7 @@ $_QEMU_CMD \
     -machine $_MACHINE \
     -vga none \
     -device virtio-gpu-pci \
+    $(if [ "$_ARCH" == "aarch64" ]; then echo "-device virtio-keyboard-pci"; fi) \
     -device virtio-tablet-pci \
     -display gtk,zoom-to-fit=off \
     -m $_ramSize \
