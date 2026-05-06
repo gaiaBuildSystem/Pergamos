@@ -2,7 +2,8 @@
 
 set -e
 
-_IMAGE_VERSION="0.0.6"
+_IMAGE_VERSION="0.1.0"
+_IMAGE_VERSION_DASH="0-1-0"
 
 if [ "$1" == "dhcp" ]; then
     echo "Starting DHCP server ..."
@@ -51,22 +52,15 @@ if [ "$1" == "image-download" ]; then
             exit 69
         fi
 
-        curl -L -o img.tar.xz \
-            https://br-se1.magaluobjects.com/gaia-imgs/${MACHINE}-ota-0-0-0.img.tar.xz
-        tar -xf img.tar.xz
-        rm img.tar.xz
-        mv ${MACHINE}-ota-0-0-0.img /host/phobos.img
+        curl -L -o img.zip \
+            https://github.com/gaiaBuildSystem/cookbook-phobos/releases/download/v${_IMAGE_VERSION}/PhobOS-${MACHINE}-ota-${_IMAGE_VERSION_DASH}.zip
+        unzip -o img.zip
+        rm img.zip
+        mv PhobOS-${MACHINE}-ota-${_IMAGE_VERSION_DASH}.img /host/phobos.img
 
-        # for arm64 we will need also the bios
-        if [ "${IMAGE_ARCH}" = "aarch64" ]; then
-            curl -L -o u-boot.bin \
-                https://br-se1.magaluobjects.com/gaia-imgs/u-boot.bin
-
-            if [ ! -d /firmware ]; then
-                mkdir /firmware
-            fi
-
-            mv u-boot.bin /firmware/u-boot.bin
+        # if there is the u-boot.bin file in the current directory, move it to /host/u-boot.bin
+        if [ -f u-boot.bin ]; then
+            mv u-boot.bin /host/u-boot.bin
         fi
 
         # lock file for the version ok
@@ -89,6 +83,15 @@ _ramSize=$(printf "%.0f" $RAM)
 _instances=$INSTANCES
 _name=$USER_VM_NAME
 _ramSize=$(($_ramSize * 1024))
+
+# workaround for the u-boot.bin file
+# if it exists in the current directory, use it,
+# otherwise use the one in the firmware directory
+if [ -f /host/u-boot.bin ]; then
+    _FIRMWARE_PATH="/host/u-boot.bin"
+else
+    _FIRMWARE_PATH="/firmware/u-boot.bin"
+fi
 
 # check if _instances is null or string than parse it as number
 if [ -z "$_instances" ]; then
@@ -220,7 +223,7 @@ $_QEMU_CMD \
     -drive file=$_name,format=raw,if=virtio \
     $(if [ "$_ARCH" == "x86_64" ]; then echo "-drive if=pflash,format=raw,readonly=on,file=/usr/share/OVMF/OVMF_CODE_4M.fd"; fi) \
     $(if [ "$_ARCH" == "x86_64" ]; then echo "-drive if=pflash,format=raw,file=/tmp/OVMF_VARS.fd"; fi) \
-    $(if [ "$_ARCH" == "aarch64" ]; then echo "-bios /firmware/u-boot.bin"; fi) \
+    $(if [ "$_ARCH" == "aarch64" ]; then echo "-bios ${_FIRMWARE_PATH}"; fi) \
     -chardev socket,id=chrtpm,path=/tmp/pemsafe/swtpm-sock \
     -tpmdev emulator,id=tpm0,chardev=chrtpm \
     $(if [ "$_ARCH" == "x86_64" ]; then echo "-device tpm-tis,tpmdev=tpm0"; fi) \
