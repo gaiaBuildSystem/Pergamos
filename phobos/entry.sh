@@ -2,8 +2,10 @@
 
 set -e
 
-_IMAGE_VERSION="0.1.0"
-_IMAGE_VERSION_DASH="0-1-0"
+_IMAGE_AMD64_VERSION="0.1.0"
+_IMAGE_AMD64_VERSION_DASH="0-1-0"
+_IMAGE_ARM64_VERSION="0.1.1"
+_IMAGE_ARM64_VERSION_DASH="0-1-1"
 
 if [ "$1" == "dhcp" ]; then
     echo "Starting DHCP server ..."
@@ -45,15 +47,20 @@ if [ "$1" == "image-download" ]; then
 
         if [ "${IMAGE_ARCH}" = "x86_64" ]; then
             MACHINE="qemux86-64"; \
+            _IMAGE_VERSION=$_IMAGE_AMD64_VERSION
+            _IMAGE_VERSION_DASH=$_IMAGE_AMD64_VERSION_DASH
         elif [ "${IMAGE_ARCH}" = "aarch64" ]; then
             MACHINE="qemuarm64"; \
+            _IMAGE_VERSION=$_IMAGE_ARM64_VERSION
+            _IMAGE_VERSION_DASH=$_IMAGE_ARM64_VERSION_DASH
         else
             echo "Unsupported architecture: ${IMAGE_ARCH}";
             exit 69
         fi
 
         curl -L -o img.zip \
-            https://github.com/gaiaBuildSystem/cookbook-phobos/releases/download/v${_IMAGE_VERSION}/PhobOS-${MACHINE}-ota-${_IMAGE_VERSION_DASH}.zip
+            https://github.com/gaiaBuildSystem/phobos-releases/releases/download/v${_IMAGE_VERSION}/PhobOS-${MACHINE}-ota-${_IMAGE_VERSION_DASH}.zip
+
         unzip -o img.zip
         rm img.zip
         mv PhobOS-${MACHINE}-ota-${_IMAGE_VERSION_DASH}.img /host/phobos.img
