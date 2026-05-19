@@ -37,12 +37,13 @@ RUN IMAGE_ARCH=$(arch) && \
         echo "Unsupported architecture"; \
         exit 1; \
     fi && \
-    wget --progress=dot:giga --no-check-certificate https://ziglang.org/download/0.13.0/zig-linux-${ZIG_ARCH}-0.13.0.tar.xz \
-    && tar -xvf zig-linux-${ZIG_ARCH}-0.13.0.tar.xz \
+    # https://ziglang.org/download/
+    wget --progress=dot:giga --no-check-certificate https://ziglang.org/download/0.16.0/zig-${ZIG_ARCH}-linux-0.16.0.tar.xz \
+    && tar -xvf zig-${ZIG_ARCH}-linux-0.16.0.tar.xz \
     && mkdir -p /usr/local/zig \
-    && mv zig-linux-${ZIG_ARCH}-0.13.0/* /usr/local/zig \
-    && rm -rf zig-linux-${ZIG_ARCH}-0.13.0.tar.xz \
-    && ln -s /usr/local/zig/zig /usr/bin/zig
+    && mv zig-${ZIG_ARCH}-linux-0.16.0/* /usr/local/zig \
+    && rm -rf zig-${ZIG_ARCH}-linux-0.16.0.tar.xz \
+    && ln -fs /usr/local/zig/zig /usr/bin/zig
 
 WORKDIR /source
 

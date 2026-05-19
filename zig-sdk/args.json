@@ -1,7 +1,7 @@
 {
     "image": "zig-sdk",
     "registry": "pergamos",
-    "version": "0.13.0",
+    "version": "0.16.0",
     "multiarch": "true",
     "machines": [
         {
