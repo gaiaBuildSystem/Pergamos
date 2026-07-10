@@ -33,6 +33,25 @@ if [ "$1" == "tpm2" ]; then
     exit 0
 fi
 
+
+_IMAGE_VERSION=""
+IMAGE_ARCH=$(arch)
+MACHINE=""
+
+if [ "${IMAGE_ARCH}" = "x86_64" ]; then
+    MACHINE="qemux86-64"; \
+    _IMAGE_VERSION=$_IMAGE_AMD64_VERSION
+    _IMAGE_VERSION_DASH=$_IMAGE_AMD64_VERSION_DASH
+elif [ "${IMAGE_ARCH}" = "aarch64" ]; then
+    MACHINE="qemuarm64"; \
+    _IMAGE_VERSION=$_IMAGE_ARM64_VERSION
+    _IMAGE_VERSION_DASH=$_IMAGE_ARM64_VERSION_DASH
+else
+    echo "Unsupported architecture: ${IMAGE_ARCH}";
+    exit 69
+fi
+
+
 # to download the image from the magalu objects
 if [ "$1" == "image-download" ]; then
     # check if the /host/phobos.img file
@@ -41,22 +60,6 @@ if [ "$1" == "image-download" ]; then
     if [ ! -f /host/phobos-${_IMAGE_VERSION}.img ]; then
         echo "phobos.img file not found!"
         echo "Downloading it ..."
-
-        IMAGE_ARCH=$(arch)
-        MACHINE=""
-
-        if [ "${IMAGE_ARCH}" = "x86_64" ]; then
-            MACHINE="qemux86-64"; \
-            _IMAGE_VERSION=$_IMAGE_AMD64_VERSION
-            _IMAGE_VERSION_DASH=$_IMAGE_AMD64_VERSION_DASH
-        elif [ "${IMAGE_ARCH}" = "aarch64" ]; then
-            MACHINE="qemuarm64"; \
-            _IMAGE_VERSION=$_IMAGE_ARM64_VERSION
-            _IMAGE_VERSION_DASH=$_IMAGE_ARM64_VERSION_DASH
-        else
-            echo "Unsupported architecture: ${IMAGE_ARCH}";
-            exit 69
-        fi
 
         curl -L -o img.zip \
             https://github.com/gaiaBuildSystem/phobos-releases/releases/download/v${_IMAGE_VERSION}/PhobOS-${MACHINE}-ota-${_IMAGE_VERSION_DASH}.zip
