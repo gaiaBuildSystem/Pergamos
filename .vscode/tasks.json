@@ -16,6 +16,43 @@
             }
         },
         {
+            "label": "build-push-image",
+            "hide": false,
+            "type": "shell",
+            "command": "/opt/venv/bin/python",
+            "args": [
+                "-m", "xonsh",
+                "./.scripts/build-multiarch.xsh",
+                "--container-file-folder",
+                "./${input:containerFolder}",
+                "--push"
+            ],
+            "problemMatcher": "$tsc",
+            "dependsOrder": "sequence",
+            "icon": {
+                "id": "run-all-coverage"
+            }
+        },
+        {
+            "label": "build-push-image-no-cache",
+            "hide": false,
+            "type": "shell",
+            "command": "/opt/venv/bin/python",
+            "args": [
+                "-m", "xonsh",
+                "./.scripts/build-multiarch.xsh",
+                "--container-file-folder",
+                "./${input:containerFolder}",
+                "--push",
+                "--no-cache"
+            ],
+            "problemMatcher": "$tsc",
+            "dependsOrder": "sequence",
+            "icon": {
+                "id": "build"
+            }
+        },
+        {
             "label": "run-file",
             "command": "python3",
             "isBackground": true,
@@ -59,6 +96,12 @@
             "type": "promptString",
             "description": "Input arguments for the script",
             "default": ""
+        },
+        {
+            "id": "containerFolder",
+            "type": "promptString",
+            "description": "Which container we will build today?",
+            "default": "phobos"
         }
     ]
 }
