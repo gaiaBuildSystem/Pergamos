@@ -62,7 +62,7 @@ if [ "$1" == "image-download" ]; then
         echo "Downloading it ..."
 
         curl -L -o img.zip \
-            https://github.com/gaiaBuildSystem/phobos-releases/releases/download/v${_IMAGE_VERSION}-qemu/PhobOS-${MACHINE}-ota-${_IMAGE_VERSION_DASH}.zip
+            https://github.com/gaiaBuildSystem/cookbook-phobos/releases/download/v${_IMAGE_VERSION}-qemu/PhobOS-${MACHINE}-ota-${_IMAGE_VERSION_DASH}.zip
 
         unzip -o img.zip
         rm img.zip
