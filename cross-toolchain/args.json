@@ -2,6 +2,7 @@
     "image_prefix": "/cross-toolchain",
     "registry": "pergamos",
     "version": "latest",
+    "pushLatest": false,
     "multiarch": false,
     "machines": [
         {

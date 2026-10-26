@@ -2,6 +2,7 @@
     "image": "zig-sdk",
     "registry": "pergamos",
     "version": "0.15.1",
+    "pushLatest": true,
     "multiarch": "true",
     "machines": [
         {

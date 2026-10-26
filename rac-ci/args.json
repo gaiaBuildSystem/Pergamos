@@ -2,6 +2,7 @@
     "image": "rac-ci",
     "registry": "pergamos",
     "version": "latest",
+    "pushLatest": false,
     "multiarch": "true",
     "machines": [
         {

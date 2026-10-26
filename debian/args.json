@@ -2,6 +2,7 @@
     "image": "debian",
     "registry": "pergamos",
     "version": "bookworm",
+    "pushLatest": false,
     "multiarch": "true",
     "machines": [
         {

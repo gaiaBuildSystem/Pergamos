@@ -2,6 +2,7 @@
     "image": "podman",
     "registry": "pergamos",
     "version": "trixie",
+    "pushLatest": true,
     "multiarch": "true",
     "machines": [
         {

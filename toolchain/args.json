@@ -2,6 +2,7 @@
     "image": "toolchain",
     "registry": "pergamos",
     "version": "bookworm",
+    "pushLatest": true,
     "multiarch": "true",
     "machines": [
         {

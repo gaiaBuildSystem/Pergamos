@@ -2,6 +2,7 @@
     "image": "bsp-builder",
     "registry": "pergamos",
     "version": "latest",
+    "pushLatest": false,
     "multiarch": "true",
     "machines": [
         {

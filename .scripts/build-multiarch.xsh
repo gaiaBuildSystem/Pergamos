@@ -119,6 +119,26 @@ if container_file_folder_path.exists():
                 push=push_to_dockerhub
             )
 
+            # also push with latest tag if configured
+            _ret = subprocess.run(
+                [
+                    "docker", "tag",
+                    f"{os.environ['IMAGE_NAME']}:{os.environ['IMAGE_VERSION']}",
+                    f"{os.environ['IMAGE_NAME']}:latest"
+                ],
+                check=True,
+                env=os.environ
+            )
+
+            _ret = subprocess.run(
+                [
+                    "docker", "push",
+                    f"{os.environ['IMAGE_NAME']}:latest"
+                ],
+                check=True,
+                env=os.environ
+            )
+
 else:
     write_error(f"{container_file_folder} does not exist")
     exit(404)

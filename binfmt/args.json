@@ -2,6 +2,7 @@
     "image": "binfmt",
     "registry": "pergamos",
     "version": "9.0.2",
+    "pushLatest": true,
     "multiarch": "true",
     "machines": [
         {
